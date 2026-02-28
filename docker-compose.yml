@@ -1,0 +1,50 @@
+services:
+  edge:
+    build:
+      context: ./edge
+      dockerfile: Dockerfile
+    container_name: oae_edge
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./edge:/app
+      - ./edge/data:/app/data
+    environment:
+      - REPLAY_SPEED_X=60
+      - CLOUD_SYNC_URL=http://cloud:8002/sync
+    networks:
+      - oae_net
+    restart: unless-stopped
+
+  cloud:
+    build:
+      context: ./cloud
+      dockerfile: Dockerfile
+    container_name: oae_cloud
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./cloud:/app
+      - ./cloud/data:/app/data
+    networks:
+      - oae_net
+    restart: unless-stopped
+
+  ui:
+    image: node:22-alpine
+    container_name: oae_ui
+    working_dir: /app
+    volumes:
+      - ./ui:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_EDGE_URL=http://localhost:8001
+      - VITE_CLOUD_URL=http://localhost:8002
+    networks:
+      - oae_net
+
+networks:
+  oae_net:
+    driver: bridge

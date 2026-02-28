@@ -1,0 +1,23 @@
+# Environment / secrets – keep local only
+.env
+.env.*
+!.env.example
+
+# Claude-related files
+.claude/
+*claude*
+claude*
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# Local research / planning (keep untracked)
+deep-research-report (1).md
+deep-research-report (2).md
+plan.md
