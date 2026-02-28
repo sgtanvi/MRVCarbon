@@ -19,6 +19,68 @@
 
 The “bicarbonate ceiling” is **dynamic**: operators need to know *is today safe? how much is too much?* Coastal systems aren’t well-mixed, so capacity shifts with mixing, temperature, and chemistry. The hard part is **trustworthy MRV when the signal is small and sensors are messy** — we need a conservative envelope and an evidentiary record that can survive audit.
 
+
+# Our solution: an offline-first IoT MRV system
+One-sentence description
+
+We built an offline-first edge MRV system that fuses time-series sensor data, computes a conservative safety envelope (cap_low/mid/high), detects data-quality issues, and produces tamper-evident audit logs and a Daily MRV Note.
+
+# Primary user
+Operator / field team responsible for deciding day-of discharge operations at a coastal site (bay/fjord/estuary) under uncertainty.
+
+Primary output (the “decision”)
+Instead of a generic dashboard, our primary output is:
+Recommended max discharge cap today (low / mid / high)
+Confidence score + QC flags
+Reason codes (what drove the cap)
+MRV evidence artifact (exportable note + verifiable log chain)
+
+
+# Architecture mapped to 6 IoT system criteria
+Criteria list: 1) Communications, 2) Cloud–Fog Hybrid Architecture, 3) Privacy & Security, 4) Robustness & Reliability, 5) Algorithms, 6) User + IoT Device Interactions
+
+1) Communications
+Goal: keep operating with intermittent/poor connectivity.
+Edge generates decisions locally (no cloud dependency)
+Store-and-forward sync: when connectivity is available, edge batches decisions to cloud
+Payloads are compact: decision records + summary stats + hashes (not full raw streams)
+
+2) Cloud–Fog Hybrid Architecture
+Fog (edge) responsibilities:
+Sensor ingestion / replay
+QC and anomaly checks
+Envelope calculation (cap_low/mid/high)
+Local persistence
+Cloud responsibilities:
+Receive batches and persist
+Verify integrity (hash chain)
+Generate MRV artifact exports (Daily MRV Note)
+
+3) Privacy & Security
+Goal: MRV requires tamper resistance and provenance.
+Tamper-evident logging via hash chaining across decisions
+Decision export includes model/config identifiers so audits can validate “what code produced this”
+Minimal data principle: export what’s needed for MRV (inputs + decisions + QC), not everything
+
+4) Robustness & Reliability
+Goal: handle faulty sensors / missing data safely.
+QC scoring reduces confidence when readings are missing/out-of-range
+Conservative envelope policy tightens caps when confidence drops
+Offline mode: edge continues producing decisions even when cloud is down
+
+5) Algorithms
+Goal: compute a defensible envelope from available signals.
+Physics-informed carbonate computation (Ω) when inputs allow
+Safety envelope logic combining Ω, temperature, mixing proxy, QC flags
+Output is cap range + reason codes, not opaque numbers
+
+6) User + IoT Device Interactions
+Goal: the UI must help a non-data-scientist decide.
+One-screen view: cap range, confidence, reason codes
+Simple alerting: “degraded mode” when sensors fail
+Export button: generate Daily MRV Note
+
+
 ---
 
 ## What we compute (minimum viable physics)
