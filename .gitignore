@@ -1,3 +1,13 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build / output
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
 # Environment / secrets – keep local only
 .env
 .env.*
