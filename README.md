@@ -2,13 +2,12 @@
 
 **Offline-first edge MRV system that computes a safe operating envelope and a tamper-evident audit trail.**
 
-## **DEMO SLIDES**
+## **DEMO**
 
-**[→ VIEW / DOWNLOAD DEMO SLIDES (PDF)](https://drive.google.com/file/d/1FaWIJt85IXvuusukZOERdN_Ags2rC3fS/view?usp=sharing)** — *OAE_MRV_TechPitch.pdf*
+**[→ VIEW / DOWNLOAD DEMO SLIDES (PDF)](https://drive.google.com/file/d/124OdI2SyyKq7s19owG1s_Cj7fr253Y24/view?usp=sharing)** — *OAE_MRV_TechPitch.pdf*
 
-## **DEMO Video**
+**[→ VIEW DEMO Video](https://drive.google.com/file/d/1n2djujAgC9q-KhuA_zLYX2kLE-ochGTj/view?usp=sharing)** 
 
-[DEMO VIDEO] (https://drive.google.com/file/d/1n2djujAgC9q-KhuA_zLYX2kLE-ochGTj/view?usp=sharing) 
 ---
 
 - **Output:** Max safe discharge rate as `cap_low` / `cap_mid` / `cap_high` (t/day)
