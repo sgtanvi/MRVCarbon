@@ -3,6 +3,23 @@ import axios from 'axios'
 const EDGE_URL = import.meta.env.VITE_EDGE_URL || 'http://localhost:8001'
 const CLOUD_URL = import.meta.env.VITE_CLOUD_URL || 'http://localhost:8002'
 
+export interface Chemistry {
+  omega_aragonite?: number
+  dic?: number
+  alkalinity?: number
+  revelle_factor?: number
+  pH_total?: number
+  pCO2_out?: number
+  input_pH?: number
+  input_pCO2?: number
+  input_temperature?: number
+  input_salinity?: number
+  input_ta?: number
+  carb_method?: string
+  headroom?: number
+  spread?: number
+}
+
 export interface Decision {
   timestamp: string
   cap_low: number
@@ -14,6 +31,7 @@ export interface Decision {
   source: string
   row_hash?: string
   decision_id?: number
+  chemistry?: Chemistry
 }
 
 export interface Status {

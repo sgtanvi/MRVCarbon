@@ -34,6 +34,7 @@ class EnvelopeDecision(BaseModel):
     source: str
     row_hash: Optional[str] = None
     decision_id: Optional[int] = None
+    chemistry: Optional[dict] = None
 
 
 class SyncPayload(BaseModel):

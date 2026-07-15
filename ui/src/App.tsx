@@ -6,6 +6,7 @@ import { ReasonBadges } from './components/ReasonBadges'
 import { ConfidenceBar } from './components/ConfidenceBar'
 import { AuditLog } from './components/AuditLog'
 import { ExportButton } from './components/ExportButton'
+import { ChemistryPanel } from './components/ChemistryPanel'
 
 const FAULT_OPTIONS: { mode: FaultMode; label: string; description: string; color: string; active: string }[] = [
   {
@@ -177,6 +178,11 @@ export default function App() {
 
           {/* Reason codes */}
           <ReasonBadges codes={decision.reason_codes} />
+
+          {/* Chemistry deep dive */}
+          {decision.chemistry && (
+            <ChemistryPanel chemistry={decision.chemistry} capMid={decision.cap_mid} />
+          )}
 
           {/* Export */}
           <div className="flex justify-end">

@@ -31,8 +31,8 @@ def _calc(
     par2_type: int,
     salinity: float,
     temperature: float,
-) -> float:
-    """Run PyCO2SYS and return Omega_aragonite."""
+) -> dict:
+    """Run PyCO2SYS and return full chemistry dict."""
     try:
         result = pyco2.sys(
             par1=par1,
@@ -46,11 +46,23 @@ def _calc(
             opt_k_bisulfate=K_BISULFATE,
             opt_pH_scale=OPT_PH_SCALE,
         )
-        omega = float(result["saturation_aragonite"])
-        return omega
+        def _f(key: str) -> float | None:
+            v = result.get(key)
+            try:
+                return round(float(v), 4)
+            except (TypeError, ValueError):
+                return None
+        return {
+            "omega_aragonite": _f("saturation_aragonite"),
+            "dic": _f("dic"),
+            "alkalinity": _f("alkalinity"),
+            "revelle_factor": _f("revelle_factor"),
+            "pH_total": _f("pH"),
+            "pCO2_out": _f("pCO2"),
+        }
     except Exception as e:
         logger.warning("PyCO2SYS error: %s", e)
-        return 1.0  # conservative fallback
+        return {"omega_aragonite": 1.0}
 
 
 def compute_aragonite(
@@ -59,7 +71,7 @@ def compute_aragonite(
     total_alkalinity: float | None,
     salinity: float,
     temperature: float,
-) -> tuple[float, str]:
+) -> tuple[float, str, dict]:
     """
     Returns (omega_aragonite, method_used).
     """
@@ -68,29 +80,29 @@ def compute_aragonite(
 
     # Priority 1: pH + pCO2 (best)
     if pH is not None and pCO2 is not None:
-        omega = _calc(pH, pCO2, 3, 4, s, t)
-        return omega, "pH+pCO2"
+        chem = _calc(pH, pCO2, 3, 4, s, t)
+        return chem.get("omega_aragonite", 1.0), "pH+pCO2", chem
 
     # Priority 2: TA + pH
     if total_alkalinity is not None and pH is not None:
-        omega = _calc(total_alkalinity, pH, 1, 3, s, t)
-        return omega, "TA+pH"
+        chem = _calc(total_alkalinity, pH, 1, 3, s, t)
+        return chem.get("omega_aragonite", 1.0), "TA+pH", chem
 
     # Priority 3: TA + pCO2
     if total_alkalinity is not None and pCO2 is not None:
-        omega = _calc(total_alkalinity, pCO2, 1, 4, s, t)
-        return omega, "TA+pCO2"
+        chem = _calc(total_alkalinity, pCO2, 1, 4, s, t)
+        return chem.get("omega_aragonite", 1.0), "TA+pCO2", chem
 
     # Priority 4: pH + default TA
     if pH is not None:
-        omega = _calc(DEFAULT_TA, pH, 1, 3, s, t)
-        return omega, "pH+defaultTA"
+        chem = _calc(DEFAULT_TA, pH, 1, 3, s, t)
+        return chem.get("omega_aragonite", 1.0), "pH+defaultTA", chem
 
     # Priority 5: pCO2 + default TA
     if pCO2 is not None:
-        omega = _calc(DEFAULT_TA, pCO2, 1, 4, s, t)
-        return omega, "pCO2+defaultTA"
+        chem = _calc(DEFAULT_TA, pCO2, 1, 4, s, t)
+        return chem.get("omega_aragonite", 1.0), "pCO2+defaultTA", chem
 
     # Priority 6: all defaults — hard conservative
     logger.warning("No carbonate parameters available — returning Omega=1.0")
-    return 1.0, "all_defaults"
+    return 1.0, "all_defaults", {"omega_aragonite": 1.0}
