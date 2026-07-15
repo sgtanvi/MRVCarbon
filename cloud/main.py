@@ -45,6 +45,11 @@ CREATE TABLE IF NOT EXISTS decisions (
     received_at TEXT
 );
 """
+# TODO(chemistry-panel): SyncPayload carries EnvelopeDecision.chemistry from the
+# edge, but this table has no chemistry column so it's dropped on ingest — the
+# MRV Note/export never sees it. Add a `chemistry TEXT` (JSON) column + migration
+# and thread it through the INSERT/SELECT below once the edge-side persistence
+# (see edge/audit.py TODO) lands.
 
 MRV_NOTE_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">

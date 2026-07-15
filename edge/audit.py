@@ -31,6 +31,11 @@ CREATE TABLE IF NOT EXISTS decisions (
     synced INTEGER DEFAULT 0
 );
 """
+# TODO(chemistry-panel): EnvelopeDecision.chemistry isn't persisted here — add a
+# `chemistry TEXT` (JSON) column + migration, write it in write_decision(), and
+# read it back in get_unsynced()/get_audit_log() so /audit_log and post-restart
+# reads aren't missing chemistry that /decision has live. Same gap exists in
+# cloud/main.py's decisions table.
 
 
 def _compute_hash(decision: EnvelopeDecision, prev_hash: str) -> str:
