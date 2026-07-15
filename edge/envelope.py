@@ -31,6 +31,24 @@ def compute_envelope(
     reading = qc.reading
     reason_codes: list[str] = list(qc.flags)
 
+    # --- Carbonate system ---
+    omega, carb_method, chem = compute_aragonite(
+        pH=reading.pH,
+        pCO2=reading.pCO2,
+        total_alkalinity=reading.total_alkalinity,
+        salinity=reading.salinity or 33.5,
+        temperature=reading.temperature or 12.5,
+    )
+    reason_codes.append(f"CARB_METHOD:{carb_method}")
+
+    # Attach sensor inputs to chemistry for UI display
+    chem["input_pH"] = reading.pH
+    chem["input_pCO2"] = reading.pCO2
+    chem["input_temperature"] = reading.temperature
+    chem["input_salinity"] = reading.salinity
+    chem["input_ta"] = reading.total_alkalinity
+    chem["carb_method"] = carb_method
+
     # --- Plausibility hard stop ---
     if "IMPLAUSIBLE_PH_PCO2" in qc.flags:
         reason_codes.append("PLAUSIBILITY_FAIL")
@@ -43,17 +61,8 @@ def compute_envelope(
             confidence=0.0,
             aragonite_saturation=0.0,
             source=reading.source,
+            chemistry=chem,
         )
-
-    # --- Carbonate system ---
-    omega, carb_method = compute_aragonite(
-        pH=reading.pH,
-        pCO2=reading.pCO2,
-        total_alkalinity=reading.total_alkalinity,
-        salinity=reading.salinity or 33.5,
-        temperature=reading.temperature or 12.5,
-    )
-    reason_codes.append(f"CARB_METHOD:{carb_method}")
 
     # --- Safety gate ---
     if omega < OMEGA_SAFETY:
@@ -111,6 +120,9 @@ def compute_envelope(
     reason_codes.append(f"HEADROOM:{headroom:.2f}")
     reason_codes.append(f"TIDAL_AMP:{tidal_amplitude:.2f}m")
 
+    chem["headroom"] = round(headroom, 4)
+    chem["spread"] = round(spread, 4)
+
     return EnvelopeDecision(
         timestamp=datetime.now(tz=timezone.utc),
         cap_low=round(max(0.0, cap_low), 2),
@@ -120,4 +132,5 @@ def compute_envelope(
         confidence=round(qc.confidence, 4),
         aragonite_saturation=round(omega, 4),
         source=reading.source,
+        chemistry=chem,
     )
